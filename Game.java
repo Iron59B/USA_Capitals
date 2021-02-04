@@ -2,6 +2,7 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+
 import javax.swing.JPanel;
 import java.awt.event.*;
 import java.awt.Color;
@@ -22,22 +23,48 @@ public class Game {
     JLabel index_question;
     boolean[] correct;
     int index;
+    int nrOfQuestions;
 
     int score;
     String capital;
     JLabel feedback;
     
-    public Game() {
-        states = new States();
-        correct = new boolean[50];
+    public Game(String region) {
+        states = new States(region);
+        correct = new boolean[states.size()];
 
-        frame = new JFrame("USA Quiz");
+        if (region.equals("usa"))
+            frame = new JFrame("USA Quiz");
+        else
+            frame = new JFrame("Europe Quiz");
         frame.setLayout(null);
         frame.setSize(900, 600);
         frame.setResizable(false);
+        frame.setBackground(Color.RED);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
+        nrOfQuestions = 40;
+        capital = "";
+        score = 0;
+        
+        play(0);
+    }
 
+    public Game(String region, int nrOfQuestions) {
+        states = new States(region);
+        correct = new boolean[states.size()];
+
+        if (region.equals("usa"))
+            frame = new JFrame("USA Quiz");
+        else
+            frame = new JFrame("Europe Quiz");
+        frame.setLayout(null);
+        frame.setSize(900, 600);
+        frame.setResizable(false);
+        frame.setBackground(Color.RED);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        
+        this.nrOfQuestions = nrOfQuestions;
         capital = "";
         score = 0;
         
@@ -67,11 +94,11 @@ public class Game {
                 System.out.println("button pressed");
                 play(question+1);
                 
-                if (question == 19) {
+                if (question == nrOfQuestions-1) {
                     panel = new JPanel();
                     panel.setBounds(200, 50, 550, 450);
         
-                    label = new JLabel("     Sie haben " + score + " von 20 möglichen Punkten erreicht!");
+                    label = new JLabel("     Sie haben " + score + " von " + nrOfQuestions + " möglichen Punkten erreicht!");
                     label.setPreferredSize(new Dimension(360, 50));
                     panel.add(label);
         
@@ -83,11 +110,21 @@ public class Game {
             }
         });
 
-        if (question < 20) {
-            index = (int) (Math.random() * 50);
+        if (question < nrOfQuestions) {
+            index = (int) (Math.random() * correct.length);
 
             while (correct[index] == true) {
-                index = (int) (Math.random() * 50);
+                if (correct.length == states.size()) {
+                    label = new JLabel("     Glückwunsch, Sie kennen alles in Europa!");
+                    frame.add(label);
+                    label = new JLabel("     Sie haben " + score + " von " + nrOfQuestions + " Punkte erreicht!");
+                    frame.add(label);
+                    frame.invalidate();
+                    frame.validate();
+                    frame.setVisible(true);
+                    return;
+                }
+                index = (int) (Math.random() * correct.length);
             }
             state = (String) states.get_mapping().get(index);
             capital = (String) states.get_States().get(state);
@@ -95,7 +132,7 @@ public class Game {
             label = new JLabel("        Wie heißt die Bundeshauptstadt von " + state + "?");
             label.setPreferredSize(new Dimension(360, 50));
             
-            index_question = new JLabel("    Frage " + (question+1) + " von 20");
+            index_question = new JLabel("    Frage " + (question+1) + " von " + nrOfQuestions);
             index_question.setBounds(400, 500, 300, 70);
             panel = new JPanel();
             panel.setBounds(200, 50, 550, 450);
